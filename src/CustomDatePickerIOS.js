@@ -8,7 +8,6 @@ import {
   View
 } from "react-native";
 import ReactNativeModal from "react-native-modal";
-import { isIphoneX } from "./utils";
 
 export default class CustomDatePickerIOS extends React.PureComponent {
   static propTypes = {
@@ -21,9 +20,7 @@ export default class CustomDatePickerIOS extends React.PureComponent {
     customConfirmButtonIOS: PropTypes.node,
     customConfirmButtonWhileInteractingIOS: PropTypes.node,
     customDatePickerIOS: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
-    customTitleContainerIOS: PropTypes.node,
     dismissOnBackdropPressIOS: PropTypes.bool,
-    hideTitleContainerIOS: PropTypes.bool,
     isVisible: PropTypes.bool,
     date: PropTypes.instanceOf(Date),
     datePickerContainerStyleIOS: PropTypes.any,
@@ -35,8 +32,6 @@ export default class CustomDatePickerIOS extends React.PureComponent {
     onHideAfterConfirm: PropTypes.func,
     pickerRefCb: PropTypes.func,
     reactNativeModalPropsIOS: PropTypes.any,
-    titleIOS: PropTypes.string,
-    titleStyle: PropTypes.any
   };
 
   static defaultProps = {
@@ -44,14 +39,11 @@ export default class CustomDatePickerIOS extends React.PureComponent {
     confirmTextIOS: "Confirm",
     date: new Date(),
     dismissOnBackdropPressIOS: true,
-    hideTitleContainerIOS: false,
     isVisible: false,
     mode: "date",
-    neverDisableConfirmIOS: false,
     onHideAfterConfirm: () => {},
     onDateChange: () => {},
-    reactNativeModalPropsIOS: {},
-    titleIOS: "Pick a date"
+    reactNativeModalPropsIOS: {}
   };
 
   state = {
@@ -125,26 +117,17 @@ export default class CustomDatePickerIOS extends React.PureComponent {
       customConfirmButtonIOS,
       customConfirmButtonWhileInteractingIOS,
       customDatePickerIOS,
-      customTitleContainerIOS,
       datePickerContainerStyleIOS,
       dismissOnBackdropPressIOS,
-      hideTitleContainerIOS,
       isVisible,
       minuteInterval,
       mode,
       neverDisableConfirmIOS,
       pickerRefCb,
       reactNativeModalPropsIOS,
-      titleIOS,
-      titleStyle,
       ...otherProps
     } = this.props;
 
-    const titleContainer = (
-      <View style={styles.titleContainer}>
-        <Text style={[styles.title, titleStyle]}>{titleIOS}</Text>
-      </View>
-    );
     let confirmButton;
 
     // Interested PR: https://github.com/mmazzarolo/react-native-modal-datetime-picker/pull/40
@@ -193,8 +176,25 @@ export default class CustomDatePickerIOS extends React.PureComponent {
         {...reactNativeModalProps}
       >
         <View style={[styles.datepickerContainer, datePickerContainerStyleIOS]}>
-          {!hideTitleContainerIOS &&
-            (customTitleContainerIOS || titleContainer)}
+          <View style={styles.headerContainer}>
+            <TouchableHighlight
+              style={styles.cancelButton}
+              underlayColor={HIGHLIGHT_COLOR}
+              onPress={this.handleCancel}
+            >
+              {customCancelButtonIOS || cancelButton}
+            </TouchableHighlight>
+            <TouchableHighlight
+              style={styles.confirmButton}
+              underlayColor={HIGHLIGHT_COLOR}
+              onPress={this.handleConfirm}
+              disabled={
+                !neverDisableConfirmIOS && this.state.userIsInteractingWithPicker
+              }
+            >
+              {confirmButton}
+            </TouchableHighlight>
+          </View>
           <View
             onStartShouldSetResponderCapture={
               neverDisableConfirmIOS !== true ? this.handleUserTouchInit : null
@@ -209,89 +209,54 @@ export default class CustomDatePickerIOS extends React.PureComponent {
               onDateChange={this.handleDateChange}
             />
           </View>
-          <TouchableHighlight
-            style={styles.confirmButton}
-            underlayColor={HIGHLIGHT_COLOR}
-            onPress={this.handleConfirm}
-            disabled={
-              !neverDisableConfirmIOS && this.state.userIsInteractingWithPicker
-            }
-          >
-            {confirmButton}
-          </TouchableHighlight>
         </View>
-
-        <TouchableHighlight
-          style={styles.cancelButton}
-          underlayColor={HIGHLIGHT_COLOR}
-          onPress={this.handleCancel}
-        >
-          {customCancelButtonIOS || cancelButton}
-        </TouchableHighlight>
       </ReactNativeModal>
     );
   }
 }
 
-const BORDER_RADIUS = 13;
 const BACKGROUND_COLOR = "white";
 const BORDER_COLOR = "#d5d5d5";
-const TITLE_FONT_SIZE = 13;
-const TITLE_COLOR = "#8f8f8f";
 const BUTTON_FONT_WEIGHT = "normal";
-const BUTTON_FONT_COLOR = "#007ff9";
-const BUTTON_FONT_SIZE = 20;
+const BUTTON_FONT_SIZE = 16;
 const HIGHLIGHT_COLOR = "#ebebeb";
 
 const styles = StyleSheet.create({
   contentContainer: {
     justifyContent: "flex-end",
-    margin: 10
+    margin: 0
   },
   datepickerContainer: {
     backgroundColor: BACKGROUND_COLOR,
-    borderRadius: BORDER_RADIUS,
-    marginBottom: 8,
     overflow: "hidden"
   },
-  titleContainer: {
-    borderBottomColor: BORDER_COLOR,
+  headerContainer: {
+    flexDirection: 'row',
+    borderColor: BORDER_COLOR,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    padding: 14,
-    backgroundColor: "transparent"
-  },
-  title: {
-    textAlign: "center",
-    color: TITLE_COLOR,
-    fontSize: TITLE_FONT_SIZE
+    justifyContent: 'space-between'
   },
   confirmButton: {
-    borderColor: BORDER_COLOR,
-    borderTopWidth: StyleSheet.hairlineWidth,
     backgroundColor: "transparent",
-    height: 57,
     justifyContent: "center"
   },
   confirmText: {
+    padding: 10,
     textAlign: "center",
-    color: BUTTON_FONT_COLOR,
+    color: '#ff03d2',
     fontSize: BUTTON_FONT_SIZE,
     fontWeight: BUTTON_FONT_WEIGHT,
     backgroundColor: "transparent"
   },
   cancelButton: {
-    backgroundColor: BACKGROUND_COLOR,
-    borderRadius: BORDER_RADIUS,
-    height: 57,
-    marginBottom: isIphoneX() ? 20 : 0,
     justifyContent: "center"
   },
   cancelText: {
     padding: 10,
     textAlign: "center",
-    color: BUTTON_FONT_COLOR,
+    color: '#373737',
     fontSize: BUTTON_FONT_SIZE,
-    fontWeight: "600",
+    fontWeight: BUTTON_FONT_WEIGHT,
     backgroundColor: "transparent"
   }
 });

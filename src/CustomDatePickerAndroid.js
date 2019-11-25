@@ -65,8 +65,8 @@ export default class CustomDatePickerAndroid extends React.PureComponent {
     if (action !== DatePickerAndroid.dismissedAction) {
       let date;
       if (this.props.date && !isNaN(this.props.date.getTime())) {
-        let hour = this.props.date.getHours();
-        let minute = this.props.date.getMinutes();
+        let hour = this.props.date.getUTCHours();
+        let minute = this.props.date.getUTCMinutes();
         date = new Date(year, month, day, hour, minute);
       } else {
         date = new Date(year, month, day);
@@ -79,8 +79,8 @@ export default class CustomDatePickerAndroid extends React.PureComponent {
           mode: this.props.timePickerModeAndroid
         };
         if (this.props.date) {
-          timeOptions.hour = this.props.date.getHours();
-          timeOptions.minute = this.props.date.getMinutes();
+          timeOptions.hour = this.props.date.getUTCHours();
+          timeOptions.minute = this.props.date.getUTCMinutes();
         }
 
         let pickedTime;
@@ -112,8 +112,8 @@ export default class CustomDatePickerAndroid extends React.PureComponent {
     let picked;
     try {
       picked = await TimePickerAndroid.open({
-        hour: this.props.date.getHours(),
-        minute: this.props.date.getMinutes(),
+        hour: this.props.date.getUTCHours(),
+        minute: this.props.date.getUTCMinutes(),
         is24Hour: this.props.is24Hour,
         mode: this.props.timePickerModeAndroid
       });
@@ -130,9 +130,9 @@ export default class CustomDatePickerAndroid extends React.PureComponent {
         const year = this.props.date.getFullYear();
         const month = this.props.date.getMonth();
         const day = this.props.date.getDate();
-        date = new Date(year, month, day, hour, minute);
+        date = new Date(Date.UTC(year, month, day, hour, minute));
       } else {
-        date = new Date().setHours(hour).setMinutes(minute);
+        date = new Date(Date.UTC()).setHours(hour).setMinutes(minute);
       }
       this.props.onConfirm(date);
       this.props.onHideAfterConfirm(date);
